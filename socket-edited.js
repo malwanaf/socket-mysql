@@ -5,6 +5,7 @@ const mysql = require('mysql');
 const MySQLEvents = require('@rodrigogs/mysql-events');
 
 const app = express();
+const port = 3000; // Change this to your desired port
 const httpServer = createServer(app);
 const io = new Server(httpServer, {  
   cors: {
@@ -31,12 +32,12 @@ const startMySQLEvents = async () => {
       expression: 'sekolahan.user',
       statement: MySQLEvents.STATEMENTS.ALL,
       onEvent: (event) => {
-        console.log(event);
+        // console.log(event); // No need to print this
         if (event) {
-          const sql = "SELECT * FROM user";
+          const sql = "SELECT * FROM strikes";
           connection.query(sql, (err, result) => {
             if (err) throw err;
-            console.log(result);
+            // console.log(result); // No need to print this
             io.emit("hasilnya", { data: result });
           });
         }
@@ -55,13 +56,15 @@ io.on("connection", (socket) => {
     startMySQLEvents();
   }
 
-  const sql = "SELECT * FROM user";
+  const sql = "SELECT * FROM strikes";
   connection.query(sql, (err, result) => {
     if (err) throw err;
-    console.log(result);
+    // console.log(result); // No need to print this
     socket.emit("getfirst", result);
   });
   console.log("user connected");
 });
 
-httpServer.listen(3000, () => console.log("Server running on port 3000"));
+httpServer.listen(port, '0.0.0.0', () => {
+  console.log(`Server running at http://0.0.0.0:${port}/`);
+});
