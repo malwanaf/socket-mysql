@@ -68,9 +68,33 @@ instance.on(MySQLEvents.EVENTS.CONNECTION_ERROR, console.error);
 
         })
       })
+
+ socket.on("editsocket",(data)=>{
+        const sql = `update user set nama='${data.editdata}'
+        where id='${data.id}'`
+        connection.query(sql,(err,result)=>{
+          if(err) throw err;
+          console.log(result);
+       
+
+        })
+      })
+socket.on("addnewitem",(newinput)=>{
+const sql = `insert into user (nama)
+  values('${newinput.newinput}')
+`
+console.log(newinput);
+        connection.query(sql,(err,result)=>{
+          if(err) throw err;
+          console.log(result);
+       
+
+        })
+      })
+  console.log("user connected");
 });
 
-httpServer.listen(3000,()=>console.log("Server 3000"));
-// httpServer.listen(port, '0.0.0.0', () => {
-//   console.log(`Server running at http://0.0.0.0:${port}/`);
-// });
+// httpServer.listen(3000,()=>console.log("Server 3000"));
+httpServer.listen(port, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${port}/`);
+  });

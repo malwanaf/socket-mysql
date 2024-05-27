@@ -5,7 +5,6 @@ const mysql = require('mysql');
 const MySQLEvents = require('@rodrigogs/mysql-events');
 
 const app = express();
-const port = 3000; // Change this to your desired port
 const httpServer = createServer(app);
 const io = new Server(httpServer, {  
   cors: {
@@ -18,7 +17,7 @@ const connection = mysql.createConnection({
   host: 'localhost', //CHANGE THIS
   user: 'root',
   password: '',
-  database: "api_test"
+  database: "sekolahan"
 });
 
 let instance;
@@ -29,15 +28,17 @@ const startMySQLEvents = async () => {
 
     instance.addTrigger({
       name: 'monitoring',
-      expression: 'api_test.strikes',
+      expression: 'sekolahan.user',
+      //sekolahan is database
+      //user is table
       statement: MySQLEvents.STATEMENTS.ALL,
       onEvent: (event) => {
-        // console.log(event); // No need to print this
+        console.log(event);
         if (event) {
-          const sql = "SELECT * FROM strikes";
+          const sql = "SELECT * FROM user";
           connection.query(sql, (err, result) => {
             if (err) throw err;
-            // console.log(result); // No need to print this
+            console.log(result);
             io.emit("hasilnya", { data: result });
           });
         }
@@ -56,15 +57,39 @@ io.on("connection", (socket) => {
     startMySQLEvents();
   }
 
-  const sql = "SELECT * FROM strikes";
+  const sql = "SELECT * FROM user";
   connection.query(sql, (err, result) => {
     if (err) throw err;
-    // console.log(result); // No need to print this
+    console.log(result);
     socket.emit("getfirst", result);
   });
+
+  socket.on("deletesocket", (id) => {
+    const sql = `DELETE FROM user WHERE id='${id.id}'`;
+    connection.query(sql, (err, result) => {
+      if (err) throw err;
+      console.log(result);
+    });
+  });
+
+  socket.on("editsocket", (data) => {
+    const sql = `UPDATE user SET nama='${data.editdata}' WHERE id='${data.id}'`;
+    connection.query(sql, (err, result) => {
+      if (err) throw err;
+      console.log(result);
+    });
+  });
+
+  socket.on("addnewitem", (newinput) => {
+    const sql = `INSERT INTO user (nama) VALUES('${newinput.newinput}')`;
+    console.log(newinput);
+    connection.query(sql, (err, result) => {
+      if (err) throw err;
+      console.log(result);
+    });
+  });
+
   console.log("user connected");
 });
 
-httpServer.listen(port, '0.0.0.0', () => {
-  console.log(`Server running at http://0.0.0.0:${port}/`);
-});
+httpServer.listen(3000, () => console.log("Server running on port 3000"));
